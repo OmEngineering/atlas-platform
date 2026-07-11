@@ -27,6 +27,18 @@ cursor-based for high-volume tables like `audit_logs`).
 - Every mutating endpoint requires the caller's Membership/ProjectMembership
   role to satisfy the permission table in §8.7.
 
+## 8.1.1 Authentication
+
+```
+POST   /auth/register                 Create user account
+POST   /auth/login                    Login (returns access token + refresh cookie)
+POST   /auth/refresh                  Rotate refresh token (cookie-based)
+POST   /auth/logout                   Revoke refresh token
+GET    /auth/me                       Current authenticated user
+```
+
+Postman collection: `postman/auth.postman_collection.json`.
+
 ## 8.2 Organizations
 
 ```
