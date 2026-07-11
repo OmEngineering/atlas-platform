@@ -1,0 +1,38 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: atlas-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-atlas}
+      POSTGRES_USER: ${POSTGRES_USER:-atlas}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-atlas}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-atlas} -d ${POSTGRES_DB:-atlas}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: atlas-app
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-atlas}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-atlas}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-atlas}
+      SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 8080
+    ports:
+      - "${SERVER_PORT:-8080}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure
+
+volumes:
+  postgres_data:
