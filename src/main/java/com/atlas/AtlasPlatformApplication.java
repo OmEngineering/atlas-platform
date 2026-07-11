@@ -8,6 +8,5 @@ public class AtlasPlatformApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(AtlasPlatformApplication.class, args);
-        System.out.println("Platform is running......");
     }
 }
