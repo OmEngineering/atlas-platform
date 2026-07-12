@@ -8,5 +8,6 @@ public enum ErrorCode {
     CONFLICT,
     EMAIL_ALREADY_REGISTERED,
     INVALID_CREDENTIALS,
+    SLUG_TAKEN,
     INTERNAL_ERROR
 }

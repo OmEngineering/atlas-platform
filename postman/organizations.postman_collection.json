@@ -1,0 +1,89 @@
+{
+  "info": {
+    "name": "Atlas Platform - Organizations",
+    "_postman_id": "atlas-organizations-collection",
+    "description": "Organization APIs. Set accessToken from auth collection login first.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "accessToken", "value": "" },
+    { "key": "organizationId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Create Organization",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const json = pm.response.json();",
+              "if (json.data && json.data.id) {",
+              "  pm.collectionVariables.set('organizationId', json.data.id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Acme Inc\",\n  \"slug\": \"acme\",\n  \"timezone\": \"Asia/Kolkata\",\n  \"country\": \"IN\"\n}"
+        },
+        "url": "{{baseUrl}}/api/v1/organizations"
+      }
+    },
+    {
+      "name": "Get Organization",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": "{{baseUrl}}/api/v1/organizations/{{organizationId}}"
+      }
+    },
+    {
+      "name": "Update Organization",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Acme International\",\n  \"description\": \"Updated description\"\n}"
+        },
+        "url": "{{baseUrl}}/api/v1/organizations/{{organizationId}}"
+      }
+    },
+    {
+      "name": "List Members",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": "{{baseUrl}}/api/v1/organizations/{{organizationId}}/members?page=0&pageSize=20"
+      }
+    },
+    {
+      "name": "Archive Organization",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": "{{baseUrl}}/api/v1/organizations/{{organizationId}}"
+      }
+    }
+  ]
+}
