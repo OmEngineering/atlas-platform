@@ -1,0 +1,115 @@
+{
+  "info": {
+    "name": "Atlas Platform - Invitations",
+    "_postman_id": "atlas-invitations-collection",
+    "description": "Invitation and membership APIs. Run auth + organizations collections first.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "accessToken", "value": "" },
+    { "key": "organizationId", "value": "" },
+    { "key": "invitationId", "value": "" },
+    { "key": "membershipId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Create Invitation",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const json = pm.response.json();",
+              "if (json.data && json.data.id) {",
+              "  pm.collectionVariables.set('invitationId', json.data.id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"invitee@example.com\",\n  \"role\": \"MEMBER\"\n}"
+        },
+        "url": "{{baseUrl}}/api/v1/organizations/{{organizationId}}/invitations"
+      }
+    },
+    {
+      "name": "List Pending Invitations",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": "{{baseUrl}}/api/v1/organizations/{{organizationId}}/invitations"
+      }
+    },
+    {
+      "name": "Revoke Invitation",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": "{{baseUrl}}/api/v1/invitations/{{invitationId}}"
+      }
+    },
+    {
+      "name": "Accept Invitation",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const json = pm.response.json();",
+              "if (json.data && json.data.id) {",
+              "  pm.collectionVariables.set('membershipId', json.data.id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": "{{baseUrl}}/api/v1/invitations/{{invitationId}}/accept"
+      }
+    },
+    {
+      "name": "Update Member Role",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"role\": \"ADMIN\"\n}"
+        },
+        "url": "{{baseUrl}}/api/v1/memberships/{{membershipId}}"
+      }
+    },
+    {
+      "name": "Remove Member",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": "{{baseUrl}}/api/v1/memberships/{{membershipId}}"
+      }
+    }
+  ]
+}
