@@ -1,0 +1,36 @@
+{
+  "info": {
+    "name": "Atlas Platform - Activity",
+    "_postman_id": "atlas-activity-collection",
+    "description": "Org activity feed. Any org member can read. Run auth + orgs first.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "accessToken", "value": "" },
+    { "key": "organizationId", "value": "" },
+    { "key": "projectId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "List Activity",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/organizations/{{organizationId}}/activity?pageSize=20",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "organizations", "{{organizationId}}", "activity"],
+          "query": [
+            { "key": "pageSize", "value": "20" },
+            { "key": "projectId", "value": "{{projectId}}", "disabled": true },
+            { "key": "targetType", "value": "TASK", "disabled": true },
+            { "key": "cursor", "value": "", "disabled": true }
+          ]
+        }
+      }
+    }
+  ]
+}
