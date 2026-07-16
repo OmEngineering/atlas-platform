@@ -3,6 +3,9 @@ package com.atlas.modules.organizations.service;
 import com.atlas.exception.ApiException;
 import com.atlas.exception.ErrorCode;
 import com.atlas.exception.ResourceNotFoundException;
+import com.atlas.modules.audit.entity.AuditActorType;
+import com.atlas.modules.audit.entity.AuditTargetType;
+import com.atlas.modules.audit.service.AuditLogService;
 import com.atlas.modules.auth.entity.User;
 import com.atlas.modules.billing.entity.Subscription;
 import com.atlas.modules.billing.entity.SubscriptionPlan;
@@ -31,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -41,18 +45,21 @@ public class OrganizationService {
     private final SubscriptionRepository subscriptionRepository;
     private final SubscriptionService subscriptionService;
     private final MembershipAuthorizationService membershipAuthorizationService;
+    private final AuditLogService auditLogService;
 
     public OrganizationService(
             OrganizationRepository organizationRepository,
             MembershipRepository membershipRepository,
             SubscriptionRepository subscriptionRepository,
             SubscriptionService subscriptionService,
-            MembershipAuthorizationService membershipAuthorizationService) {
+            MembershipAuthorizationService membershipAuthorizationService,
+            AuditLogService auditLogService) {
         this.organizationRepository = organizationRepository;
         this.membershipRepository = membershipRepository;
         this.subscriptionRepository = subscriptionRepository;
         this.subscriptionService = subscriptionService;
         this.membershipAuthorizationService = membershipAuthorizationService;
+        this.auditLogService = auditLogService;
     }
 
     @Transactional
@@ -82,6 +89,15 @@ public class OrganizationService {
         membership.setStatus(MembershipStatus.ACTIVE);
         membership.setJoinedAt(Instant.now());
         membershipRepository.save(membership);
+
+        auditLogService.record(
+                organization.getId(),
+                creator.getId(),
+                AuditActorType.USER,
+                "organization.created",
+                AuditTargetType.ORGANIZATION,
+                organization.getId(),
+                Map.of("name", organization.getName(), "slug", organization.getSlug()));
 
         return OrganizationMapper.toResponse(organization);
     }
@@ -114,7 +130,17 @@ public class OrganizationService {
             organization.setCountry(request.country());
         }
 
-        return OrganizationMapper.toResponse(organizationRepository.save(organization));
+        organization = organizationRepository.save(organization);
+        auditLogService.record(
+                organizationId,
+                userId,
+                AuditActorType.USER,
+                "organization.updated",
+                AuditTargetType.ORGANIZATION,
+                organizationId,
+                Map.of("name", organization.getName()));
+
+        return OrganizationMapper.toResponse(organization);
     }
 
     @Transactional
@@ -135,6 +161,15 @@ public class OrganizationService {
         organization.setStatus(OrganizationStatus.ARCHIVED);
         organization.setDeletedAt(Instant.now());
         organizationRepository.save(organization);
+
+        auditLogService.record(
+                organizationId,
+                userId,
+                AuditActorType.USER,
+                "organization.archived",
+                AuditTargetType.ORGANIZATION,
+                organizationId,
+                Map.of());
     }
 
     @Transactional(readOnly = true)
