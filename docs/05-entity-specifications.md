@@ -281,5 +281,35 @@ without also updating those docs in the same PR.
 **Indexes:** unique(`organizationId`), index(`status`).
 
 ---
+
+## 5.15 Notification
+
+**Fields**: id, userId (FK recipient), organizationId (FK, nullable), eventType (string, e.g. `task.status_changed`), title, body, targetType / targetId (polymorphic, see `04-domain-model-relationships.md` §4.4), readAt (null = unread), emailStatus (`PENDING`,`SENT`,`SKIPPED`,`FAILED`), emailSentAt, createdAt.
+
+**Business Rules**
+- Created by the Notification consumer from domain events (`09-event-flows.md`);
+  never written directly by other modules' repositories.
+- Respects `NotificationPreference`: if in-app is off, inbox stays empty;
+  if email is off, `emailStatus = SKIPPED`.
+- v1 channels: in-app + email only (push is v2+).
+
+**Indexes:** index(`userId`,`createdAt` DESC), partial index on unread
+(`userId` WHERE `readAt IS NULL`).
+
+---
+
+## 5.16 NotificationPreference
+
+**Fields**: id, userId (FK, unique), inAppEnabled (default true), emailEnabled (default true), createdAt/updatedAt.
+
+**Business Rules**
+- Created lazily on first preference read/write or first notification
+  dispatch for a user.
+- Disabling both channels is allowed (user opts out entirely).
+
+**Indexes:** unique(`userId`).
+
+---
 *Changelog*
+- v1.1 — Added Notification and NotificationPreference (§5.15–5.16).
 - v1.0 — 14 core entities specified with fields, rules, indexes.

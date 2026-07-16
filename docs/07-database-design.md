@@ -29,6 +29,8 @@ comments
 attachments
 audit_logs
 subscriptions
+notifications
+notification_preferences
 ```
 
 ## 7.2 Core Tables (DDL sketch)

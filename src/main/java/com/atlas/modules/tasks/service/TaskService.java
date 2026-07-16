@@ -1,5 +1,7 @@
 package com.atlas.modules.tasks.service;
 
+import com.atlas.event.DomainEvent;
+import com.atlas.event.DomainEventPublisher;
 import com.atlas.exception.ApiException;
 import com.atlas.exception.ErrorCode;
 import com.atlas.exception.ResourceNotFoundException;
@@ -28,8 +30,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -43,6 +47,7 @@ public class TaskService {
     private final AttachmentRepository attachmentRepository;
     private final ProjectAuthorizationService projectAuthorizationService;
     private final LabelService labelService;
+    private final DomainEventPublisher domainEventPublisher;
 
     public TaskService(
             TaskRepository taskRepository,
@@ -52,7 +57,8 @@ public class TaskService {
             CommentRepository commentRepository,
             AttachmentRepository attachmentRepository,
             ProjectAuthorizationService projectAuthorizationService,
-            LabelService labelService) {
+            LabelService labelService,
+            DomainEventPublisher domainEventPublisher) {
         this.taskRepository = taskRepository;
         this.projectRepository = projectRepository;
         this.projectMembershipRepository = projectMembershipRepository;
@@ -61,6 +67,7 @@ public class TaskService {
         this.attachmentRepository = attachmentRepository;
         this.projectAuthorizationService = projectAuthorizationService;
         this.labelService = labelService;
+        this.domainEventPublisher = domainEventPublisher;
     }
 
     @Transactional
@@ -145,13 +152,30 @@ public class TaskService {
         if (request.priority() != null) {
             task.setPriority(parsePriority(request.priority()));
         }
+        TaskStatus previousStatus = task.getStatus();
+        boolean statusChanged = false;
         if (request.status() != null) {
             TaskStatus newStatus = parseStatus(request.status());
+            statusChanged = previousStatus != newStatus;
             applyStatusSideEffects(task, newStatus);
             task.setStatus(newStatus);
         }
 
-        return toResponse(taskRepository.save(task));
+        Task saved = taskRepository.save(task);
+        if (statusChanged) {
+            Project project = projectRepository.findByIdAndDeletedAtIsNull(saved.getProjectId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("taskId", saved.getId());
+            payload.put("taskKey", saved.getKey());
+            payload.put("fromStatus", previousStatus.name());
+            payload.put("toStatus", saved.getStatus().name());
+            payload.put("assigneeIds", List.copyOf(saved.getAssigneeIds()));
+            payload.put("createdBy", saved.getCreatedBy());
+            domainEventPublisher.publish(DomainEvent.of(
+                    "task.status_changed", project.getOrganizationId(), userId, payload));
+        }
+        return toResponse(saved);
     }
 
     @Transactional
@@ -174,8 +198,19 @@ public class TaskService {
                     HttpStatus.UNPROCESSABLE_ENTITY);
         }
 
-        task.getAssigneeIds().add(request.userId());
-        return toResponse(taskRepository.save(task));
+        boolean added = task.getAssigneeIds().add(request.userId());
+        Task saved = taskRepository.save(task);
+        if (added) {
+            Project project = projectRepository.findByIdAndDeletedAtIsNull(saved.getProjectId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("taskId", saved.getId());
+            payload.put("taskKey", saved.getKey());
+            payload.put("assigneeId", request.userId());
+            domainEventPublisher.publish(DomainEvent.of(
+                    "task.assignee_added", project.getOrganizationId(), userId, payload));
+        }
+        return toResponse(saved);
     }
 
     @Transactional
