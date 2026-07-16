@@ -13,7 +13,7 @@ Everything needed for the end-to-end journey in `06-user-journeys.md`
 - [x] Projects, ProjectMembership
 - [x] Tasks, Milestones, Labels, Comments, Attachments
 - [x] Notifications (in-app + email only)
-- [ ] Audit Logs
+- [x] Audit Logs
 - [ ] Billing (single provider, Stripe, Free/Team/Business plans)
 - [ ] Activity Timeline
 

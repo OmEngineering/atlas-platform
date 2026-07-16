@@ -189,6 +189,15 @@ GET  /organizations/:id/audit-logs      (OWNER/ADMIN only; cursor-paginated, fil
 GET  /organizations/:id/activity         (any member; project/task-scoped filters)
 ```
 
+**GET /organizations/:id/audit-logs — Query params**
+
+`actorId`, `targetType`, `targetId`, `from`, `to`, `cursor`, `pageSize` (default 20, max 100).
+
+Cursor format: `{createdAt}|{id}` from the previous page's `nextCursor`.
+
+Audit rows are written in the same transaction as org, membership, and
+invitation changes (see `09-event-flows.md` §9.5).
+
 ## 8.10 Permission Matrix (endpoint category → minimum role)
 
 | Endpoint category | OWNER | ADMIN | BILLING_MGR | PM | MEMBER | GUEST |
@@ -214,5 +223,6 @@ GET  /organizations/:id/activity         (any member; project/task-scoped filter
 
 ---
 *Changelog*
+- v1.2 — Audit log read API and cursor paging notes (§8.9).
 - v1.1 — Added Notifications endpoints (§8.7); renumbered Billing/Audit/Permission/Versioning.
 - v1.0 — Core CRUD surface for all v1 modules defined with permission matrix.
