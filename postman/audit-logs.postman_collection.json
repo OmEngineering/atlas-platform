@@ -1,0 +1,43 @@
+{
+  "info": {
+    "name": "Atlas Platform - Audit Logs",
+    "_postman_id": "atlas-audit-collection",
+    "description": "Org audit trail. Owner/admin only. Run auth + org first.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "accessToken", "value": "" },
+    { "key": "organizationId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "List Audit Logs",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": "{{baseUrl}}/api/v1/organizations/{{organizationId}}/audit-logs?pageSize=20"
+      }
+    },
+    {
+      "name": "List Audit Logs (filtered)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/organizations/{{organizationId}}/audit-logs?targetType=ORGANIZATION&pageSize=20",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "organizations", "{{organizationId}}", "audit-logs"],
+          "query": [
+            { "key": "targetType", "value": "ORGANIZATION" },
+            { "key": "pageSize", "value": "20" }
+          ]
+        }
+      }
+    }
+  ]
+}
