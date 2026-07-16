@@ -86,7 +86,30 @@ POST   /projects/:id/members                       Add member/guest (PM+)
 DELETE /projects/:id/members/:userId               Remove member (PM+)
 ```
 
-## 8.5 Tasks
+## 8.5 Tasks & Work Management
+
+### Milestones
+
+```
+POST   /projects/:projectId/milestones          Create (MEMBER+)
+GET    /projects/:projectId/milestones           List
+GET    /milestones/:id                           Get
+PATCH  /milestones/:id                           Update (MEMBER+)
+DELETE /milestones/:id                           Delete (PM+; nulls milestoneId on tasks)
+```
+
+### Labels
+
+```
+POST   /projects/:projectId/labels              Create project-scoped label (MEMBER+)
+GET    /projects/:projectId/labels               List project labels
+DELETE /labels/:id                                Delete (MEMBER+)
+```
+
+Color must be hex `#RRGGBB`. Labels are org-scoped; project-scoped labels
+set `projectId`; org-wide labels use `projectId = null` (future API).
+
+### Tasks
 
 ```
 POST   /projects/:projectId/tasks                 Create
@@ -99,6 +122,10 @@ DELETE /tasks/:id/assignees/:userId                    Remove assignee
 POST   /tasks/:id/labels                                Add label
 DELETE /tasks/:id/labels/:labelId                        Remove label
 ```
+
+Task keys are generated server-side as `{projectKey}-{n}` (e.g. `ATL-1`).
+Assignees must have active project membership. Labels must belong to the
+same organization and match the project (or be org-wide).
 
 **PATCH /tasks/:id — Request**
 ```json
