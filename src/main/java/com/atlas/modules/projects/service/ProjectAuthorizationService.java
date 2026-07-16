@@ -63,6 +63,28 @@ public class ProjectAuthorizationService {
         }
     }
 
+    public void requireCanManageTasks(UUID projectId, UUID userId) {
+        Project project = requireVisibleProject(projectId, userId);
+        if (isOrgAdmin(project.getOrganizationId(), userId)) {
+            return;
+        }
+        ProjectMembership membership = projectMembershipRepository.findByProjectIdAndUserId(projectId, userId)
+                .orElseThrow(() -> new ForbiddenException("Insufficient permissions for this operation"));
+        if (!membership.getRole().isAtLeast(ProjectMembershipRole.MEMBER)) {
+            throw new ForbiddenException("Insufficient permissions for this operation");
+        }
+    }
+
+    public void requireCanComment(UUID projectId, UUID userId) {
+        Project project = requireVisibleProject(projectId, userId);
+        if (isOrgAdmin(project.getOrganizationId(), userId)) {
+            return;
+        }
+        if (projectMembershipRepository.findByProjectIdAndUserId(projectId, userId).isEmpty()) {
+            throw new ForbiddenException("Insufficient permissions for this operation");
+        }
+    }
+
     private boolean isOrgAdmin(UUID organizationId, UUID userId) {
         return membershipRepository.findByOrganizationIdAndUserIdAndStatus(
                         organizationId, userId, MembershipStatus.ACTIVE)
