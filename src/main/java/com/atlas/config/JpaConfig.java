@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @Configuration
 @EnableJpaAuditing
-@EnableConfigurationProperties(AtlasProperties.class)
+@EnableConfigurationProperties({AtlasProperties.class, StripeProperties.class})
 public class JpaConfig {
 }
