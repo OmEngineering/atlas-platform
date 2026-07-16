@@ -3,6 +3,9 @@ package com.atlas.modules.memberships.service;
 import com.atlas.exception.ApiException;
 import com.atlas.exception.ErrorCode;
 import com.atlas.exception.ResourceNotFoundException;
+import com.atlas.modules.audit.entity.AuditActorType;
+import com.atlas.modules.audit.entity.AuditTargetType;
+import com.atlas.modules.audit.service.AuditLogService;
 import com.atlas.modules.organizations.dto.MembershipResponse;
 import com.atlas.modules.organizations.entity.Membership;
 import com.atlas.modules.organizations.entity.MembershipRole;
@@ -15,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -22,12 +26,15 @@ public class MembershipManagementService {
 
     private final MembershipRepository membershipRepository;
     private final MembershipAuthorizationService membershipAuthorizationService;
+    private final AuditLogService auditLogService;
 
     public MembershipManagementService(
             MembershipRepository membershipRepository,
-            MembershipAuthorizationService membershipAuthorizationService) {
+            MembershipAuthorizationService membershipAuthorizationService,
+            AuditLogService auditLogService) {
         this.membershipRepository = membershipRepository;
         this.membershipAuthorizationService = membershipAuthorizationService;
+        this.auditLogService = auditLogService;
     }
 
     @Transactional
@@ -44,8 +51,20 @@ public class MembershipManagementService {
             throw new ApiException(ErrorCode.CONFLICT, "Cannot change owner role here", HttpStatus.CONFLICT);
         }
 
+        MembershipRole previousRole = membership.getRole();
         membership.setRole(newRole);
-        return OrganizationMapper.toMembershipResponse(membershipRepository.save(membership));
+        membership = membershipRepository.save(membership);
+
+        auditLogService.record(
+                membership.getOrganizationId(),
+                actorId,
+                AuditActorType.USER,
+                "membership.role_changed",
+                AuditTargetType.MEMBERSHIP,
+                membership.getId(),
+                Map.of("userId", membership.getUserId().toString(), "from", previousRole.name(), "to", newRole.name()));
+
+        return OrganizationMapper.toMembershipResponse(membership);
     }
 
     @Transactional
@@ -60,6 +79,15 @@ public class MembershipManagementService {
 
         membership.setStatus(MembershipStatus.REMOVED);
         membershipRepository.save(membership);
+
+        auditLogService.record(
+                membership.getOrganizationId(),
+                actorId,
+                AuditActorType.USER,
+                "membership.removed",
+                AuditTargetType.MEMBERSHIP,
+                membership.getId(),
+                Map.of("userId", membership.getUserId().toString(), "role", membership.getRole().name()));
     }
 
     private Membership findActiveMembership(UUID membershipId) {
