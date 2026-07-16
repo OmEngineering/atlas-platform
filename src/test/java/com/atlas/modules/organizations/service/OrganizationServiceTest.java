@@ -1,6 +1,7 @@
 package com.atlas.modules.organizations.service;
 
 import com.atlas.exception.ApiException;
+import com.atlas.modules.audit.service.AuditLogService;
 import com.atlas.modules.auth.entity.User;
 import com.atlas.modules.auth.entity.UserStatus;
 import com.atlas.modules.billing.repository.SubscriptionRepository;
@@ -36,6 +37,8 @@ class OrganizationServiceTest {
     private SubscriptionService subscriptionService;
     @Mock
     private MembershipAuthorizationService membershipAuthorizationService;
+    @Mock
+    private AuditLogService auditLogService;
 
     private OrganizationService organizationService;
 
@@ -46,7 +49,8 @@ class OrganizationServiceTest {
                 membershipRepository,
                 subscriptionRepository,
                 subscriptionService,
-                membershipAuthorizationService);
+                membershipAuthorizationService,
+                auditLogService);
     }
 
     @Test
