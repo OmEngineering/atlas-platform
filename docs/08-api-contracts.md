@@ -182,6 +182,21 @@ POST   /organizations/:id/subscription/change      Change plan (validates seat/f
 POST   /webhooks/stripe                             Provider webhook (signature-verified, not user-facing)
 ```
 
+**GET /organizations/:id/subscription** — returns `plan`, `seats`, `usedSeats`,
+`status`, `currentPeriodEnd`, and `stripeEnabled` (whether a live Stripe key
+is configured).
+
+**POST .../checkout** — body `{ "plan": "TEAM"|"BUSINESS", "seats": number }`.
+Returns `{ checkoutUrl, sessionId }`. Uses a stub checkout URL when
+`atlas.billing.stripe.api-key` is blank (local dev).
+
+**POST .../change** — body `{ "plan": "FREE"|"TEAM"|"BUSINESS", "seats": number }`.
+Rejects when `seats` is less than active member count (`SEAT_LIMIT_EXCEEDED`).
+Paid downgrades to FREE clear provider subscription ids.
+
+**POST /webhooks/stripe** — public; requires valid `Stripe-Signature` header.
+Handles `checkout.session.completed` and `invoice.payment_failed`.
+
 ## 8.9 Audit & Activity (read-only)
 
 ```

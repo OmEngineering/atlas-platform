@@ -54,6 +54,13 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of(ErrorCode.VALIDATION_ERROR, "Malformed request body"));
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException exception) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of(ErrorCode.VALIDATION_ERROR, exception.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
     ResponseEntity<ErrorResponse> handleUnexpected(Exception exception) {
         log.error("Unhandled exception", exception);
