@@ -14,7 +14,7 @@ Everything needed for the end-to-end journey in `06-user-journeys.md`
 - [x] Tasks, Milestones, Labels, Comments, Attachments
 - [x] Notifications (in-app + email only)
 - [x] Audit Logs
-- [ ] Billing (single provider, Stripe, Free/Team/Business plans)
+- [x] Billing (single provider, Stripe, Free/Team/Business plans)
 - [ ] Activity Timeline
 
 Explicitly **out** of v1: Teams module UI (entity exists, minimal API

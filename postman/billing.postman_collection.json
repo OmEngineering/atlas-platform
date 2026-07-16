@@ -1,0 +1,55 @@
+{
+  "info": {
+    "name": "Atlas Platform - Billing",
+    "_postman_id": "atlas-billing-collection",
+    "description": "Org subscription and Stripe checkout. Owner or billing manager only. Run auth + org first.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "accessToken", "value": "" },
+    { "key": "organizationId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Get Subscription",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": "{{baseUrl}}/api/v1/organizations/{{organizationId}}/subscription"
+      }
+    },
+    {
+      "name": "Create Checkout Session",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"plan\": \"TEAM\",\n  \"seats\": 5\n}"
+        },
+        "url": "{{baseUrl}}/api/v1/organizations/{{organizationId}}/subscription/checkout"
+      }
+    },
+    {
+      "name": "Change Plan",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"plan\": \"FREE\",\n  \"seats\": 2\n}"
+        },
+        "url": "{{baseUrl}}/api/v1/organizations/{{organizationId}}/subscription/change"
+      }
+    }
+  ]
+}
