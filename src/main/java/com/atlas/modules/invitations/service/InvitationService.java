@@ -1,5 +1,8 @@
 package com.atlas.modules.invitations.service;
 
+import com.atlas.modules.audit.entity.AuditActorType;
+import com.atlas.modules.audit.entity.AuditTargetType;
+import com.atlas.modules.audit.service.AuditLogService;
 import com.atlas.event.DomainEvent;
 import com.atlas.event.DomainEventPublisher;
 import com.atlas.exception.ApiException;
@@ -44,6 +47,7 @@ public class InvitationService {
     private final UserRepository userRepository;
     private final TokenHasher tokenHasher;
     private final DomainEventPublisher domainEventPublisher;
+    private final AuditLogService auditLogService;
 
     public InvitationService(
             InvitationRepository invitationRepository,
@@ -52,7 +56,8 @@ public class InvitationService {
             MembershipAuthorizationService membershipAuthorizationService,
             UserRepository userRepository,
             TokenHasher tokenHasher,
-            DomainEventPublisher domainEventPublisher) {
+            DomainEventPublisher domainEventPublisher,
+            AuditLogService auditLogService) {
         this.invitationRepository = invitationRepository;
         this.membershipRepository = membershipRepository;
         this.subscriptionRepository = subscriptionRepository;
@@ -60,6 +65,7 @@ public class InvitationService {
         this.userRepository = userRepository;
         this.tokenHasher = tokenHasher;
         this.domainEventPublisher = domainEventPublisher;
+        this.auditLogService = auditLogService;
     }
 
     @Transactional
@@ -95,6 +101,15 @@ public class InvitationService {
         invitation.setExpiresAt(Instant.now().plus(7, ChronoUnit.DAYS));
         invitation = invitationRepository.save(invitation);
 
+        auditLogService.record(
+                organizationId,
+                inviterId,
+                AuditActorType.USER,
+                "invitation.created",
+                AuditTargetType.INVITATION,
+                invitation.getId(),
+                Map.of("email", email, "role", role.name()));
+
         return toResponse(invitation, rawToken);
     }
 
@@ -117,6 +132,15 @@ public class InvitationService {
         }
         invitation.setStatus(InvitationStatus.REVOKED);
         invitationRepository.save(invitation);
+
+        auditLogService.record(
+                invitation.getOrganizationId(),
+                userId,
+                AuditActorType.USER,
+                "invitation.revoked",
+                AuditTargetType.INVITATION,
+                invitation.getId(),
+                Map.of("email", invitation.getEmail()));
     }
 
     @Transactional
@@ -155,6 +179,24 @@ public class InvitationService {
 
         invitation.setStatus(InvitationStatus.ACCEPTED);
         invitationRepository.save(invitation);
+
+        auditLogService.record(
+                invitation.getOrganizationId(),
+                user.getId(),
+                AuditActorType.USER,
+                "membership.created",
+                AuditTargetType.MEMBERSHIP,
+                membership.getId(),
+                Map.of("userId", user.getId().toString(), "role", membership.getRole().name()));
+
+        auditLogService.record(
+                invitation.getOrganizationId(),
+                user.getId(),
+                AuditActorType.USER,
+                "invitation.accepted",
+                AuditTargetType.INVITATION,
+                invitation.getId(),
+                Map.of("email", invitation.getEmail()));
 
         Map<String, Object> payload = new HashMap<>();
         payload.put("invitationId", invitation.getId());
