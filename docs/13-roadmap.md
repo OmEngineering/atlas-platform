@@ -9,9 +9,9 @@
 Everything needed for the end-to-end journey in `06-user-journeys.md`
 §6.1, correctly permissioned per `08-api-contracts.md` §8.9:
 
-- [ ] Organizations, Users/Auth, Memberships, Invitations
-- [ ] Projects, ProjectMembership
-- [ ] Tasks, Milestones, Labels, Comments, Attachments
+- [x] Organizations, Users/Auth, Memberships, Invitations
+- [x] Projects, ProjectMembership
+- [x] Tasks, Milestones, Labels, Comments, Attachments
 - [ ] Notifications (in-app + email only)
 - [ ] Audit Logs
 - [ ] Billing (single provider, Stripe, Free/Team/Business plans)
