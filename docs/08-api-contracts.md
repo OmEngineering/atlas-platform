@@ -150,7 +150,30 @@ POST   /comments/:commentId/attachments            Upload
 GET    /attachments/:id/download                    Download (403 if scanStatus != CLEAN)
 ```
 
-## 8.7 Billing
+## 8.7 Notifications
+
+Caller-scoped (JWT user). No org role required beyond authentication.
+
+```
+GET    /notifications                         List (paginated; ?unreadOnly=&page=&pageSize=)
+GET    /notifications/unread-count            Unread badge count
+POST   /notifications/:id/read                Mark one as read
+POST   /notifications/read-all                Mark all as read
+GET    /notifications/preferences             Get in-app/email preferences
+PUT    /notifications/preferences             Update preferences
+```
+
+**PUT /notifications/preferences — Request**
+```json
+{ "inAppEnabled": true, "emailEnabled": false }
+```
+
+Notifications are produced from domain events (`task.status_changed`,
+`task.assignee_added`, `comment.created` mentions, `invitation.accepted`)
+per `09-event-flows.md`. Email delivery in v1 is provider-ready (logged
+sender); SMTP/provider credentials are an infra concern.
+
+## 8.8 Billing
 
 ```
 GET    /organizations/:id/subscription          Get current plan/usage
@@ -159,14 +182,14 @@ POST   /organizations/:id/subscription/change      Change plan (validates seat/f
 POST   /webhooks/stripe                             Provider webhook (signature-verified, not user-facing)
 ```
 
-## 8.8 Audit & Activity (read-only)
+## 8.9 Audit & Activity (read-only)
 
 ```
 GET  /organizations/:id/audit-logs      (OWNER/ADMIN only; cursor-paginated, filterable by actor/target/date)
 GET  /organizations/:id/activity         (any member; project/task-scoped filters)
 ```
 
-## 8.9 Permission Matrix (endpoint category → minimum role)
+## 8.10 Permission Matrix (endpoint category → minimum role)
 
 | Endpoint category | OWNER | ADMIN | BILLING_MGR | PM | MEMBER | GUEST |
 |---|---|---|---|---|---|---|
@@ -182,7 +205,7 @@ GET  /organizations/:id/activity         (any member; project/task-scoped filter
 
 \* Configurable per-org setting: `allowMembersToCreateProjects`.
 
-## 8.10 Versioning Policy
+## 8.11 Versioning Policy
 
 - Breaking changes require a new version prefix (`/v2/...`); `/v1` is
   supported for a minimum 6 months after `/v2` GA.
@@ -191,4 +214,5 @@ GET  /organizations/:id/activity         (any member; project/task-scoped filter
 
 ---
 *Changelog*
+- v1.1 — Added Notifications endpoints (§8.7); renumbered Billing/Audit/Permission/Versioning.
 - v1.0 — Core CRUD surface for all v1 modules defined with permission matrix.

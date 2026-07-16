@@ -1,5 +1,7 @@
 package com.atlas.modules.invitations.service;
 
+import com.atlas.event.DomainEvent;
+import com.atlas.event.DomainEventPublisher;
 import com.atlas.exception.ApiException;
 import com.atlas.exception.ErrorCode;
 import com.atlas.exception.ForbiddenException;
@@ -26,8 +28,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -39,6 +43,7 @@ public class InvitationService {
     private final MembershipAuthorizationService membershipAuthorizationService;
     private final UserRepository userRepository;
     private final TokenHasher tokenHasher;
+    private final DomainEventPublisher domainEventPublisher;
 
     public InvitationService(
             InvitationRepository invitationRepository,
@@ -46,13 +51,15 @@ public class InvitationService {
             SubscriptionRepository subscriptionRepository,
             MembershipAuthorizationService membershipAuthorizationService,
             UserRepository userRepository,
-            TokenHasher tokenHasher) {
+            TokenHasher tokenHasher,
+            DomainEventPublisher domainEventPublisher) {
         this.invitationRepository = invitationRepository;
         this.membershipRepository = membershipRepository;
         this.subscriptionRepository = subscriptionRepository;
         this.membershipAuthorizationService = membershipAuthorizationService;
         this.userRepository = userRepository;
         this.tokenHasher = tokenHasher;
+        this.domainEventPublisher = domainEventPublisher;
     }
 
     @Transactional
@@ -148,6 +155,15 @@ public class InvitationService {
 
         invitation.setStatus(InvitationStatus.ACCEPTED);
         invitationRepository.save(invitation);
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("invitationId", invitation.getId());
+        payload.put("inviterId", invitation.getInvitedBy());
+        payload.put("memberName", user.getFullName());
+        payload.put("memberUserId", user.getId());
+        domainEventPublisher.publish(DomainEvent.of(
+                "invitation.accepted", invitation.getOrganizationId(), user.getId(), payload));
+
         return membership;
     }
 
