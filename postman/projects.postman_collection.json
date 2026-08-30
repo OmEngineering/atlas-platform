@@ -1,0 +1,116 @@
+{
+  "info": {
+    "name": "Atlas Platform - Projects",
+    "_postman_id": "atlas-projects-collection",
+    "description": "Project APIs. Run auth and organizations collections first.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "accessToken", "value": "" },
+    { "key": "organizationId", "value": "" },
+    { "key": "projectId", "value": "" },
+    { "key": "memberUserId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Create Project",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const json = pm.response.json();",
+              "if (json.data && json.data.id) {",
+              "  pm.collectionVariables.set('projectId', json.data.id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Atlas Core\",\n  \"key\": \"ATL\",\n  \"description\": \"Main product work\",\n  \"visibility\": \"ORG_WIDE\"\n}"
+        },
+        "url": "{{baseUrl}}/api/v1/organizations/{{organizationId}}/projects"
+      }
+    },
+    {
+      "name": "List Projects",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": "{{baseUrl}}/api/v1/organizations/{{organizationId}}/projects"
+      }
+    },
+    {
+      "name": "Get Project",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": "{{baseUrl}}/api/v1/projects/{{projectId}}"
+      }
+    },
+    {
+      "name": "Update Project",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Atlas Platform\",\n  \"description\": \"Updated scope\"\n}"
+        },
+        "url": "{{baseUrl}}/api/v1/projects/{{projectId}}"
+      }
+    },
+    {
+      "name": "Add Project Member",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"{{memberUserId}}\",\n  \"role\": \"MEMBER\"\n}"
+        },
+        "url": "{{baseUrl}}/api/v1/projects/{{projectId}}/members"
+      }
+    },
+    {
+      "name": "Remove Project Member",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": "{{baseUrl}}/api/v1/projects/{{projectId}}/members/{{memberUserId}}"
+      }
+    },
+    {
+      "name": "Archive Project",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": "{{baseUrl}}/api/v1/projects/{{projectId}}"
+      }
+    }
+  ]
+}

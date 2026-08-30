@@ -1,0 +1,242 @@
+{
+  "info": {
+    "name": "Atlas Platform - Tasks",
+    "_postman_id": "atlas-tasks-collection",
+    "description": "Task, milestone, label, comment, and attachment APIs. Run auth, organizations, and projects collections first.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "accessToken", "value": "" },
+    { "key": "organizationId", "value": "" },
+    { "key": "projectId", "value": "" },
+    { "key": "taskId", "value": "" },
+    { "key": "milestoneId", "value": "" },
+    { "key": "labelId", "value": "" },
+    { "key": "commentId", "value": "" },
+    { "key": "memberUserId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Create Milestone",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const json = pm.response.json();",
+              "if (json.data && json.data.id) {",
+              "  pm.collectionVariables.set('milestoneId', json.data.id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Sprint 1\",\n  \"startDate\": \"2026-07-01\",\n  \"dueDate\": \"2026-07-31\",\n  \"status\": \"PLANNED\"\n}"
+        },
+        "url": "{{baseUrl}}/api/v1/projects/{{projectId}}/milestones"
+      }
+    },
+    {
+      "name": "List Milestones",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": "{{baseUrl}}/api/v1/projects/{{projectId}}/milestones"
+      }
+    },
+    {
+      "name": "Create Label",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const json = pm.response.json();",
+              "if (json.data && json.data.id) {",
+              "  pm.collectionVariables.set('labelId', json.data.id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"bug\",\n  \"color\": \"#FF0000\"\n}"
+        },
+        "url": "{{baseUrl}}/api/v1/projects/{{projectId}}/labels"
+      }
+    },
+    {
+      "name": "List Labels",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": "{{baseUrl}}/api/v1/projects/{{projectId}}/labels"
+      }
+    },
+    {
+      "name": "Create Task",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const json = pm.response.json();",
+              "if (json.data && json.data.id) {",
+              "  pm.collectionVariables.set('taskId', json.data.id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Implement login flow\",\n  \"description\": \"OAuth + email/password\",\n  \"priority\": \"HIGH\",\n  \"milestoneId\": \"{{milestoneId}}\"\n}"
+        },
+        "url": "{{baseUrl}}/api/v1/projects/{{projectId}}/tasks"
+      }
+    },
+    {
+      "name": "List Tasks",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": "{{baseUrl}}/api/v1/projects/{{projectId}}/tasks?status=TODO"
+      }
+    },
+    {
+      "name": "Get Task",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": "{{baseUrl}}/api/v1/tasks/{{taskId}}"
+      }
+    },
+    {
+      "name": "Update Task Status",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"DONE\"\n}"
+        },
+        "url": "{{baseUrl}}/api/v1/tasks/{{taskId}}"
+      }
+    },
+    {
+      "name": "Add Assignee",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"{{memberUserId}}\"\n}"
+        },
+        "url": "{{baseUrl}}/api/v1/tasks/{{taskId}}/assignees"
+      }
+    },
+    {
+      "name": "Add Label to Task",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"labelId\": \"{{labelId}}\"\n}"
+        },
+        "url": "{{baseUrl}}/api/v1/tasks/{{taskId}}/labels"
+      }
+    },
+    {
+      "name": "Create Comment",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const json = pm.response.json();",
+              "if (json.data && json.data.id) {",
+              "  pm.collectionVariables.set('commentId', json.data.id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"body\": \"Progress update @teammate\"\n}"
+        },
+        "url": "{{baseUrl}}/api/v1/tasks/{{taskId}}/comments"
+      }
+    },
+    {
+      "name": "List Comments",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": "{{baseUrl}}/api/v1/tasks/{{taskId}}/comments"
+      }
+    },
+    {
+      "name": "Delete Task",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": "{{baseUrl}}/api/v1/tasks/{{taskId}}"
+      }
+    }
+  ]
+}
